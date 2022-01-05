@@ -1,28 +1,53 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import {
-    BrowserRouter as Router,
-    Switch,
+    BrowserRouter,
     Routes,
-    Route,
-    Redirect
+    Route
 } from "react-router-dom";
+import { startChecking } from '../actions/auth';
 import { LoginScreen } from '../components/auth/LoginScreen';
 import { CalendarScreen } from '../components/calendar/CalendarScreen';
+import { PrivateRoute } from './PrivateRoute';
+import { PublicRoute } from './PublicRoute';
 
 export const AppRouter = () => {
+
+    const dispatch = useDispatch  ();
+
+    const { checking } = useSelector(state => state.auth)
+           
+    // revisar la autenticacion
+    useEffect (() => {
+
+        dispatch( startChecking() );
+
+
+    }, [dispatch]);
+
+    if( checking ) {
+        return ( <h5>Espere...</h5> )
+    }
+
     return (
-        <Router>
-            <div>
-
-
-                {/* A <Switch> looks through its children <Route>s and
-            renders the first one that matches the current URL. */}
-                <Routes>
-                    <Route path="/login" element={<LoginScreen />} />
-                    <Route path="/" element={<CalendarScreen />} />
-                    <Route path="*"  element={<CalendarScreen />} />
-                </Routes>
-            </div>
-        </Router>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/login" element={
+                            <PublicRoute>
+                                <LoginScreen />
+                            </PublicRoute>
+                        } 
+                        />
+                
+                <Route path="/*"  element ={
+                        <PrivateRoute>
+                            <CalendarScreen/>
+                        </PrivateRoute>
+                    }
+                />
+                {/* <Route path="*" element={<CalendarScreen />} />   */}
+    
+            </Routes>
+        </BrowserRouter>
     )
 }
